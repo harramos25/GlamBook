@@ -1,0 +1,47 @@
+@import "tailwindcss";
+
+:root {
+  /* GlamBook Color Palette */
+  --midnight: #2B0F2F;
+  --rose: #E7A6B0;
+  --gold: #F5C77A;
+  --ivory: #F8F3F1;
+  --charcoal: #1C1C1C;
+}
+
+@theme {
+  /* Color Palette */
+  --color-midnight: var(--midnight);
+  --color-rose: var(--rose);
+  --color-gold: var(--gold);
+  --color-background: var(--ivory); /* Override default background */
+  --color-foreground: var(--charcoal); /* Override default text color */
+  
+  /* Custom Color Aliases */
+  --color-ivory: var(--ivory);
+  --color-charcoal: var(--charcoal);
+
+  /* Fonts */
+  --font-serif: var(--font-serif), ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-sans: var(--font-sans), ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-mono: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  
+  /* Animations */
+  --animate-float: float 6s ease-in-out infinite;
+  
+  @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+  }
+}
+
+/* Custom Utilities */
+@utility glass-panel {
+  @apply bg-white/40 backdrop-blur-md border border-white/60 shadow-sm;
+}
+
+/* Global Reset Tweaks */
+body {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+}
