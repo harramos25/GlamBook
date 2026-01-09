@@ -1,4 +1,5 @@
 const { PrismaClient } = require('@prisma/client');
+const bcrypt = require('bcryptjs');
 const prisma = new PrismaClient();
 
 const SERVICES = [
@@ -56,42 +57,61 @@ async function main() {
 
     // Create Services
     for (const service of SERVICES) {
-        await prisma.service.create({
-            data: service
-        });
+        // Simple check to avoid duplicates if running multiple times
+        // In real app, upsert by unique name or just skip
+        try {
+            await prisma.service.create({
+                data: service
+            });
+        } catch (e) {
+            // ignore duplicate
+        }
     }
 
     // Create Stylists (and their Users)
     for (const stylist of STYLISTS) {
-        const user = await prisma.user.create({
-            data: {
+        const user = await prisma.user.upsert({
+            where: { email: stylist.email },
+            update: {},
+            create: {
                 email: stylist.email,
                 name: stylist.name,
                 role: 'STYLIST',
             }
         });
 
-        await prisma.stylist.create({
-            data: {
-                userId: user.id,
-                name: stylist.name,
-                roleTitle: stylist.roleTitle,
-                image: stylist.image,
-                rating: stylist.rating,
-                reviews: stylist.reviews,
-                specialties: stylist.specialties,
-            }
+        const existingStylist = await prisma.stylist.findUnique({
+            where: { userId: user.id }
         });
+
+        if (!existingStylist) {
+            await prisma.stylist.create({
+                data: {
+                    userId: user.id,
+                    name: stylist.name,
+                    roleTitle: stylist.roleTitle,
+                    image: stylist.image,
+                    rating: stylist.rating,
+                    reviews: stylist.reviews,
+                    specialties: stylist.specialties,
+                }
+            });
+        }
     }
 
     // Create Admin User
+    const adminPassword = await bcrypt.hash('admin123', 10);
     await prisma.user.upsert({
         where: { email: 'admin@glambook.com' },
-        update: {},
+        update: {
+            password: adminPassword,
+            role: 'ADMIN',
+        },
         create: {
             email: 'admin@glambook.com',
             name: 'Boss Admin',
             role: 'ADMIN',
+            password: adminPassword,
         },
     });
 

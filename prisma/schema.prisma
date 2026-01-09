@@ -13,6 +13,7 @@ datasource db {
 model User {
   id        String   @id @default(uuid())
   email     String   @unique
+  password  String?  // Made optional for existing users, but needed for auth
   name      String
   phone     String?
   role      Role     @default(CLIENT)

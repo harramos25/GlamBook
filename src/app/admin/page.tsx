@@ -13,7 +13,7 @@ interface DashboardStats {
     averageTicket: number;
     recentBookings: Array<{
         user: { name: string; email: string };
-        service: { title: string; price: number };
+        service: { name: string; price: number };
         stylist: { name: string };
     }>;
 }
@@ -177,7 +177,7 @@ const AdminDashboard = () => {
                                     </div>
                                     <div className="flex-1">
                                         <p className="font-serif text-md text-midnight">{booking.user.name}</p>
-                                        <p className="text-xs text-charcoal/60">{booking.service.title}</p>
+                                        <p className="text-xs text-charcoal/60">{booking.service.name}</p>
                                     </div>
                                     <div className="font-mono font-bold text-sm text-gold">
                                         ${booking.service.price}

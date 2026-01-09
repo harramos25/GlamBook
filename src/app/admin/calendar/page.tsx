@@ -7,17 +7,56 @@ import { cn } from '@/lib/utils';
 import { STYLISTS } from '@/lib/data';
 
 // Mock Appointments
-const APPOINTMENTS = [
-    { id: 1, stylistId: 'st1', client: 'Alice Freeman', service: 'Silk Press', startTime: 9, duration: 1.5, color: 'bg-rose/20 border-rose/50 text-rose-900' },
-    { id: 2, stylistId: 'st1', client: 'Jasmine T.', service: 'Trim', startTime: 11, duration: 0.5, color: 'bg-gold/20 border-gold/50 text-yellow-900' },
-    { id: 3, stylistId: 'st2', client: 'Mike Ross', service: 'Fade & Beard', startTime: 10, duration: 1, color: 'bg-blue-100 border-blue-300 text-blue-900' },
-    { id: 4, stylistId: 'st3', client: 'Sarah Connor', service: 'Gel Mani', startTime: 9.5, duration: 1, color: 'bg-purple-100 border-purple-300 text-purple-900' },
-];
+// Removed mock APPOINTMENTS
 
 const HOURS = Array.from({ length: 11 }, (_, i) => i + 9); // 9AM to 7PM
 
 const CalendarPage = () => {
     const [selectedDate, setSelectedDate] = useState(new Date());
+    const [appointments, setAppointments] = useState<any[]>([]);
+    const [stylists, setStylists] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    React.useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const [bookRes, stylRes] = await Promise.all([
+                    fetch('/api/bookings'),
+                    fetch('/api/stylists')
+                ]);
+                const bookData = await bookRes.json();
+                const stylData = await stylRes.json();
+
+                // Transform Bookings to Appointment shape
+                // We need to parse '09:30' time strings to float hours e.g. 9.5
+                const formattedAppointments = bookData.map((b: any) => {
+                    const [h, m] = b.time.split(':').map(Number);
+                    const startTime = h + (m / 60);
+                    return {
+                        id: b.id,
+                        stylistId: b.stylistId,
+                        client: b.user.name,
+                        service: b.service.name,
+                        startTime: startTime,
+                        duration: b.service.duration / 60, // duration is in min
+                        color: 'bg-rose/20 border-rose/50 text-rose-900' // default color
+                    };
+                });
+
+                // Add Any Stylist to list or filter out? The calendar view is usually for specific staff.
+                // We'll just show actual stylists.
+                setStylists(stylData);
+                setAppointments(formattedAppointments);
+                setLoading(false);
+            } catch (err) {
+                console.error(err);
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
+
+    if (loading) return <div className="p-20 text-center">Loading Schedule...</div>;
 
     return (
         <div className="p-8 h-screen flex flex-col overflow-hidden">
@@ -65,7 +104,7 @@ const CalendarPage = () => {
 
                 {/* Rows */}
                 <div className="flex-1 overflow-y-auto">
-                    {STYLISTS.filter(s => s.id !== 'any').map((stylist) => (
+                    {stylists.map((stylist) => (
                         <div key={stylist.id} className="flex border-b border-midnight/5 min-h-[100px] relative group hover:bg-gray-50/50 transition-colors">
                             {/* Staff Column */}
                             <div className="w-48 p-4 border-r border-midnight/5 shrink-0 flex items-center gap-3">
@@ -85,7 +124,7 @@ const CalendarPage = () => {
                                 </div>
 
                                 {/* Appointments */}
-                                {APPOINTMENTS.filter(app => app.stylistId === stylist.id).map(app => {
+                                {appointments.filter(app => app.stylistId === stylist.id).map(app => {
                                     // Simple positioning logic assuming 9AM start
                                     // Each hour is 100% / 11 hours approx 9.09%
                                     // Start offset

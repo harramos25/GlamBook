@@ -1,7 +1,5 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '@/lib/prisma';
 
 export async function POST(request: Request) {
     try {
@@ -50,5 +48,31 @@ export async function POST(request: Request) {
     } catch (error) {
         console.error(error);
         return NextResponse.json({ error: 'Error creating booking' }, { status: 500 });
+    }
+}
+
+export async function GET(request: Request) {
+    try {
+        const bookings = await prisma.booking.findMany({
+            include: {
+                user: {
+                    select: { name: true, email: true }
+                },
+                stylist: {
+                    select: { name: true }
+                },
+                service: {
+                    select: { name: true, duration: true }
+                }
+            },
+            orderBy: {
+                date: 'asc'
+            }
+        });
+
+        return NextResponse.json(bookings);
+    } catch (error) {
+        console.error("Failed to fetch bookings", error);
+        return NextResponse.json({ error: 'Error fetching bookings' }, { status: 500 });
     }
 }

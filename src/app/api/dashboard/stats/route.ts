@@ -18,7 +18,7 @@ export async function GET() {
                 orderBy: { date: 'desc' },
                 include: {
                     user: { select: { name: true, email: true } },
-                    service: { select: { title: true, price: true } },
+                    service: { select: { name: true, price: true } },
                     stylist: { select: { name: true } }
                 }
             })
