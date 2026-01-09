@@ -1,25 +1,71 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { TrendingUp, Users, CalendarCheck, DollarSign } from 'lucide-react';
+import { TrendingUp, Users, CalendarCheck, DollarSign, Clock } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { cn } from '@/lib/utils';
 
-const data = [
-    { name: 'Mon', revenue: 1200 },
-    { name: 'Tue', revenue: 1800 },
-    { name: 'Wed', revenue: 1400 },
-    { name: 'Thu', revenue: 2200 },
-    { name: 'Fri', revenue: 3500 },
-    { name: 'Sat', revenue: 4200 },
-    { name: 'Sun', revenue: 3100 },
-];
+interface DashboardStats {
+    totalRevenue: number;
+    totalBookings: number;
+    totalUsers: number;
+    averageTicket: number;
+    recentBookings: Array<{
+        user: { name: string; email: string };
+        service: { title: string; price: number };
+        stylist: { name: string };
+    }>;
+}
 
 const AdminDashboard = () => {
+    const [stats, setStats] = useState<DashboardStats>({
+        totalRevenue: 0,
+        totalBookings: 0,
+        totalUsers: 0,
+        averageTicket: 0,
+        recentBookings: []
+    });
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                const res = await fetch('/api/dashboard/stats');
+                if (res.ok) {
+                    const data = await res.json();
+                    setStats(data);
+                }
+            } catch (error) {
+                console.error("Failed to fetch dashboard stats", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchStats();
+    }, []);
+
+    // Placeholder data for chart (could be real later)
+    const chartData = [
+        { name: 'Mon', revenue: 1200 },
+        { name: 'Tue', revenue: 1800 },
+        { name: 'Wed', revenue: 1400 },
+        { name: 'Thu', revenue: 2200 },
+        { name: 'Fri', revenue: 3500 },
+        { name: 'Sat', revenue: 4200 },
+        { name: 'Sun', revenue: 3100 },
+    ];
+
+    if (loading) {
+        return (
+            <div className="flex bg-ivory h-full items-center justify-center p-20">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-rose"></div>
+            </div>
+        );
+    }
+
     return (
         <div className="p-8 space-y-8">
-
             {/* Header */}
             <div className="flex justify-between items-center bg-white/40 p-6 rounded-2xl border border-white/60">
                 <div>
@@ -27,33 +73,40 @@ const AdminDashboard = () => {
                     <p className="text-charcoal/60">Welcome back, Boss.</p>
                 </div>
                 <div className="text-right">
-                    <p className="text-sm text-charcoal/50 uppercase tracking-widest font-mono">Today's Revenue</p>
-                    <p className="text-3xl font-mono font-bold text-midnight">$1,240.00</p>
+                    <p className="text-sm text-charcoal/50 uppercase tracking-widest font-mono">Total Revenue</p>
+                    <p className="text-3xl font-mono font-bold text-midnight">${stats.totalRevenue.toLocaleString()}</p>
                 </div>
             </div>
 
             {/* KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <KPICard
                     title="Total Bookings"
-                    value="124"
+                    value={stats.totalBookings.toString()}
                     change="+12%"
                     icon={CalendarCheck}
                     color="text-rose"
                 />
                 <KPICard
                     title="Active Clients"
-                    value="1,204"
+                    value={stats.totalUsers.toString()}
                     change="+5%"
                     icon={Users}
                     color="text-gold"
                 />
                 <KPICard
                     title="Avg. Ticket"
-                    value="$85.00"
+                    value={`$${Math.round(stats.averageTicket)}`}
                     change="+2%"
                     icon={DollarSign}
                     color="text-midnight"
+                />
+                <KPICard
+                    title="Completion Rate"
+                    value="98%"
+                    change="+1%"
+                    icon={TrendingUp}
+                    color="text-rose"
                 />
             </div>
 
@@ -67,7 +120,7 @@ const AdminDashboard = () => {
                     </h3>
                     <div className="h-[300px] w-full">
                         <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={data}>
+                            <AreaChart data={chartData}>
                                 <defs>
                                     <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
                                         <stop offset="5%" stopColor="#E7A6B0" stopOpacity={0.8} />
@@ -110,27 +163,31 @@ const AdminDashboard = () => {
                     </div>
                 </div>
 
-                {/* Today's Schedule Preview */}
-                <div className="bg-midnight text-ivory p-6 rounded-2xl shadow-xl shadow-midnight/20">
-                    <h3 className="text-lg font-medium mb-6">Up Next</h3>
+                {/* Recent Bookings */}
+                <div className="bg-white/80 border border-white p-6 rounded-2xl shadow-sm">
+                    <h3 className="text-lg font-medium text-midnight mb-6">Recent Activity</h3>
                     <div className="space-y-4">
-                        {[1, 2, 3, 4].map((i) => (
-                            <div key={i} className="flex gap-4 items-center p-3 rounded-xl hover:bg-white/5 transition-colors cursor-pointer group">
-                                <div className="text-center w-12">
-                                    <span className="block text-xs text-ivory/40 uppercase">PM</span>
-                                    <span className="block text-xl font-mono font-bold text-gold">0{i}:00</span>
+                        {stats.recentBookings.length === 0 ? (
+                            <p className="text-charcoal/50 text-sm">No bookings yet.</p>
+                        ) : (
+                            stats.recentBookings.map((booking, i) => (
+                                <div key={i} className="flex gap-4 items-center p-3 rounded-xl hover:bg-white/50 transition-colors cursor-pointer group border border-transparent hover:border-midnight/5">
+                                    <div className="w-10 h-10 rounded-full bg-rose/10 flex items-center justify-center text-rose">
+                                        <Clock className="w-5 h-5" />
+                                    </div>
+                                    <div className="flex-1">
+                                        <p className="font-serif text-md text-midnight">{booking.user.name}</p>
+                                        <p className="text-xs text-charcoal/60">{booking.service.title}</p>
+                                    </div>
+                                    <div className="font-mono font-bold text-sm text-gold">
+                                        ${booking.service.price}
+                                    </div>
                                 </div>
-                                <div className="flex-1 border-l border-white/10 pl-4">
-                                    <p className="font-serif text-lg">Sarah J.</p>
-                                    <p className="text-sm text-ivory/60">Silk Press & Style</p>
-                                </div>
-                                <div className="w-2 h-2 rounded-full bg-rose group-hover:shadow-[0_0_10px_var(--color-rose)] transition-shadow"></div>
-                            </div>
-                        ))}
+                            ))
+                        )}
                     </div>
                 </div>
             </div>
-
         </div>
     );
 };
