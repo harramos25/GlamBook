@@ -3,6 +3,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, Star, Clock } from 'lucide-react';
+import Link from 'next/link';
 
 const HeroSection = () => {
     // Animation Variants
@@ -44,9 +45,9 @@ const HeroSection = () => {
                     ))}
                 </div>
 
-                <button className="px-6 py-3 rounded-full border border-midnight/20 hover:border-midnight text-sm transition-all duration-300 cursor-pointer">
+                <Link href="/login" className="px-6 py-3 rounded-full border border-midnight/20 hover:border-midnight text-sm transition-all duration-300 cursor-pointer">
                     Sign In
-                </button>
+                </Link>
             </nav>
 
             {/* --- HERO CONTENT --- */}
@@ -75,13 +76,13 @@ const HeroSection = () => {
                     </motion.p>
 
                     <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4 pt-4">
-                        <a href="/book" className="group px-8 py-4 bg-midnight text-ivory rounded-2xl flex items-center justify-center gap-3 hover:bg-rose hover:shadow-lg hover:shadow-rose/30 transition-all duration-300 transform hover:-translate-y-1 cursor-pointer">
+                        <Link href="/book" className="group px-8 py-4 bg-midnight text-ivory rounded-2xl flex items-center justify-center gap-3 hover:bg-rose hover:shadow-lg hover:shadow-rose/30 transition-all duration-300 transform hover:-translate-y-1 cursor-pointer">
                             <span>Book Appointment</span>
                             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                        </a>
-                        <button className="px-8 py-4 bg-white/50 backdrop-blur-sm border border-white/60 text-midnight rounded-2xl hover:bg-white transition-all cursor-pointer">
+                        </Link>
+                        <Link href="/book" className="px-8 py-4 bg-white/50 backdrop-blur-sm border border-white/60 text-midnight rounded-2xl hover:bg-white transition-all cursor-pointer flex items-center justify-center">
                             View Services
-                        </button>
+                        </Link>
                     </motion.div>
 
                     {/* Social Proof / Stats */}
@@ -128,7 +129,7 @@ const HeroSection = () => {
 
                     {/* Floating Glass UI Card (The "Tech" Element) */}
                     <motion.div
-                        className="absolute bottom-12 -left-8 md:left-0 bg-white/20 backdrop-blur-xl border border-white/40 p-5 rounded-2xl shadow-xl max-w-[240px]"
+                        className="absolute bottom-12 -left-8 md:left-0 bg-white/70 backdrop-blur-xl border border-white/60 p-5 rounded-2xl shadow-xl max-w-[240px]"
                         initial={{ x: 50, opacity: 0 }}
                         animate={{
                             x: 0,
@@ -142,18 +143,18 @@ const HeroSection = () => {
                     >
                         <div className="flex justify-between items-start mb-3">
                             <div>
-                                <p className="text-xs text-white/80 font-medium">Next Available</p>
-                                <p className="text-sm font-serif text-white">Hair & Spa Treatment</p>
+                                <p className="text-xs text-charcoal/80 font-medium">Next Available</p>
+                                <p className="text-sm font-serif text-midnight font-bold">Hair & Spa Treatment</p>
                             </div>
-                            <div className="bg-gold/90 p-1.5 rounded-lg text-midnight">
-                                <Clock className="w-4 h-4" />
+                            <div className="bg-gold/20 p-1.5 rounded-lg text-gold-dark">
+                                <Clock className="w-4 h-4 text-orange-700" />
                             </div>
                         </div>
                         <div className="space-y-2">
-                            <div className="h-1 w-full bg-white/20 rounded-full overflow-hidden">
+                            <div className="h-1 w-full bg-charcoal/10 rounded-full overflow-hidden">
                                 <div className="h-full w-3/4 bg-rose rounded-full"></div>
                             </div>
-                            <div className="flex justify-between text-xs font-mono text-white/90">
+                            <div className="flex justify-between text-xs font-mono text-charcoal/80">
                                 <span>Today</span>
                                 <span>14:30 PM</span>
                             </div>

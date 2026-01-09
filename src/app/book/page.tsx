@@ -30,14 +30,24 @@ export default function BookPage() {
     React.useEffect(() => {
         const fetchData = async () => {
             try {
-                const [sData, stData] = await Promise.all([
-                    fetch('/api/services').then(r => r.json()),
-                    fetch('/api/stylists').then(r => r.json())
+                const [sRes, stRes] = await Promise.all([
+                    fetch('/api/services'),
+                    fetch('/api/stylists')
                 ]);
-                setServices(sData);
+
+                if (!sRes.ok || !stRes.ok) throw new Error("API Error");
+
+                const sData = await sRes.json();
+                const stData = await stRes.json();
+
+                // Validate arrays
+                const validServices = Array.isArray(sData) ? sData : [];
+                const validStylistsData = Array.isArray(stData) ? stData : [];
+
+                setServices(validServices);
 
                 // Format Stylists
-                const formattedStylists = stData.map((s: any) => ({
+                const formattedStylists = validStylistsData.map((s: any) => ({
                     id: s.id,
                     name: s.name,
                     role: s.roleTitle,
@@ -60,6 +70,17 @@ export default function BookPage() {
                 setLoading(false);
             } catch (error) {
                 console.error("Failed to fetch data", error);
+                // Fallback to avoid white screen
+                setServices([]);
+                setStylists([{
+                    id: 'any',
+                    name: 'Any Stylist',
+                    role: 'First Available',
+                    rating: 5.0,
+                    reviews: 999,
+                    image: '',
+                    specialties: []
+                }]);
                 setLoading(false);
             }
         };
